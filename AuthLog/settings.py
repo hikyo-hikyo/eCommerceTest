@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',     # Session framework
     'django.contrib.messages',     # Message framework
     'django.contrib.staticfiles',  # Manage static files like CSS and JS
+
+    'accounts',                    # Your custom app for user accounts
     'grabsomore',                  # Your custom app for auth
     'eCommerce',                  # Your custom app for eCommerce
 ]

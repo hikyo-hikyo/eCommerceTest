@@ -2,17 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
-class User(AbstractUser):
-    ROLE_CHOICES = (
-        ('buyer', 'Buyer'),
-        ('vendor', 'Vendor'),
-    )
-    role = models.CharField(
-        max_length=10, choices=ROLE_CHOICES, default='buyer')
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.TextField(blank=True)
-
-
 class Product(models.Model):
     name = models.CharField(max_length=100)
     # The name of the product, like "T-shirt" or "Laptop"
