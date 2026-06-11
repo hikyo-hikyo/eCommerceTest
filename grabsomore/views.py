@@ -1,7 +1,6 @@
 # To show HTML pages and redirect users
 from django.shortcuts import render, redirect
-# Django's built-in user, group, and permission models
-from django.contrib.auth.models import User, Group, Permission
+
 # Functions to handle login and logout
 from django.contrib.auth import authenticate, login, logout
 # For redirecting users or sending responses
@@ -27,41 +26,41 @@ from django.contrib.auth.hashers import make_password
 from accounts.forms import UserRegistrationForm
 from django.contrib import messages
 
+from accounts.models import User
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse, reverse_lazy
+from django.contrib.auth.decorators import login_required
+
+# IMPORTANT: Use your custom User model
+
 # This function handles user login
 
 
 def login_user(request):
-    # When the login form is submitted
     if request.method == 'POST':
-        # Get username and password from the form
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Check if the username and password match a user in the database
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            login(request, user)  # Log the user in and start their session
+            login(request, user)
+            messages.success(request, "Logged in successfully!")
 
-            # Set the session to expire on 30 Dec 2025 (so user stays logged in until then)
-            exp_date = datetime(2025, 12, 30)
-            now = datetime.now()
-            expiry_seconds = int((exp_date - now).total_seconds())
-            if expiry_seconds > 0:
-                # Set the expiry time for the session
-                request.session.set_expiry(expiry_seconds)
-
-            # Save some user info in the session (optional, but useful)
-            request.session['user_id'] = user.id
-            request.session['username'] = user.username
-
-            # Redirect user to the welcome page after successful login
-            return HttpResponseRedirect(reverse('grabsomore:welcome'))
+            # Redirect based on role
+            if user.is_vendor:
+                return redirect('vendor_dashboard')
+            else:
+                return redirect('grabsomore:welcome')   # or your buyer home
         else:
-            # If login failed, reload login page with an error message
+            messages.error(request, "Invalid username or password")
             return render(request, 'grabsomore/login.html', {'error': 'Invalid credentials'})
 
-    # If the user just opened the login page, show the login form
     return render(request, 'grabsomore/login.html')
 
 
@@ -70,15 +69,15 @@ def register_user(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()                     # This now creates accounts.User
-            login(request, user)
+            user = form.save()
+            login(request, user)                    # Auto-login after register
             messages.success(
                 request, f"Account created successfully as {user.get_role_display()}!")
 
             if user.is_vendor:
                 return redirect('vendor_dashboard')
             else:
-                return redirect('home')            # or buyer home
+                return redirect('grabsomore:welcome')
     else:
         form = UserRegistrationForm()
 

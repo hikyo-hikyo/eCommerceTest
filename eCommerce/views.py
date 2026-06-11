@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Store, Product
 from accounts.decorators import vendor_required
+from accounts.decorators import buyer_required
+from .models import Product, Store, Review, Cart, Cart_Item
+from django.db.models import Avg
 
 
 def view_product_page(request):
@@ -251,3 +254,91 @@ def vendor_store_products(request, store_id):
         'store': store,
         'products': products
     })
+
+# @buyer means that the user must be logged in as a buyer
+
+
+@buyer_required
+def buyer_home(request):
+    """Main buyer homepage - show all active products"""
+    products = Product.objects.filter(is_active=True).select_related('store')
+    stores = Store.objects.filter(is_active=True)
+
+    return render(request, 'eCommerce/buyer/home.html', {
+        'products': products,
+        'stores': stores,
+    })
+
+
+@buyer_required
+def product_detail(request, product_id):
+    """View single product + reviews"""
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+    reviews = product.reviews.all().order_by('-created_at')
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        Review.objects.create(
+            product=product,
+            buyer=request.user,
+            rating=rating,
+            comment=comment
+        )
+        messages.success(request, "Review submitted successfully!")
+        return redirect('product_detail', product_id=product.id)
+
+    return render(request, 'eCommerce/buyer/product_detail.html', {
+        'product': product,
+        'reviews': reviews,
+        'avg_rating': round(avg_rating, 1),
+    })
+
+
+@buyer_required
+def add_to_cart(request, product_id):
+    """Add product to buyer's cart (using model, not session)"""
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+
+    # Get or create cart for this buyer
+    cart, created = Cart.objects.get_or_create(buyer=request.user)
+
+    cart_item, created = Cart_Item.objects.get_or_create(
+        cart=cart,
+        product=product,
+        defaults={'quantity': 1}
+    )
+
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+
+    messages.success(request, f"{product.name} added to cart!")
+    return redirect('main_cart_page')
+
+
+@buyer_required
+def view_cart(request):
+    """Show cart with totals"""
+    try:
+        cart = Cart.objects.get(buyer=request.user)
+        items = cart.items.select_related('product')
+
+        total = sum(item.product.price * item.quantity for item in items)
+    except Cart.DoesNotExist:
+        items = []
+        total = 0
+
+    return render(request, 'eCommerce/main_cart_page.html', {
+        'cart': items,
+        'total_price': total,
+    })
+
+
+@buyer_required
+def remove_from_cart(request, item_id):
+    """Remove item from cart"""
+    Cart_Item.objects.filter(id=item_id, cart__buyer=request.user).delete()
+    messages.success(request, "Item removed from cart.")
+    return redirect('main_cart_page')

@@ -1,0 +1,32 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+<p><strong>Price:</strong> ${{ product.price }}</p>
+<p><strong>Stock:</strong> {{ product.stock }}</p>
+<p>{{ product.description }}</p>
+
+<a href="{% url 'add_to_cart' product.id %}">Add to Cart</a>
+
+<hr>
+<h2>Reviews ({{ reviews.count }}) - Avg: {{ avg_rating }}/5</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <select name="rating">
+        <option value="5">5 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="2">2 Stars</option>
+        <option value="1">1 Star</option>
+    </select>
+    <textarea name="comment" placeholder="Write your review..."></textarea>
+    <button type="submit">Submit Review</button>
+</form>
+
+{% for review in reviews %}
+    <p><strong>{{ review.buyer.username }}:</strong> {{ review.rating }}★ - {{ review.comment }}</p>
+{% endfor %}
+{% endblock %}

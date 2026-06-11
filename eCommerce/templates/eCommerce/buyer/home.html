@@ -1,0 +1,26 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}Shop - Buyer Home{% endblock %}
+
+{% block content %}
+<h1>Welcome to the Store, {{ request.user.username }}!</h1>
+
+<h2>Browse Stores</h2>
+<ul>
+{% for store in stores %}
+    <li><strong>{{ store.name }}</strong></li>
+{% endfor %}
+</ul>
+
+<h2>All Products</h2>
+{% for product in products %}
+    <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+        <h3>{{ product.name }} - ${{ product.price }}</h3>
+        <p>{{ product.description|truncatewords:30 }}</p>
+        <a href="{% url 'add_to_cart' product.id %}">Add to Cart</a> |
+        <a href="{% url 'product_detail' product.id %}">View Details</a>
+    </div>
+{% empty %}
+    <p>No products available yet.</p>
+{% endfor %}
+{% endblock %}
