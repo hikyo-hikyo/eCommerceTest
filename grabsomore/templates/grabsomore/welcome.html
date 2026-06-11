@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome</title>
+</head>
+<body>
+    <!-- Greet the user using their logged-in username -->
+    <h1>Welcome, {{ request.user.username }}!</h1>
+
+    <p>You are now logged in.</p>
+
+    <!-- This form logs the user out -->
+    <form method="POST" action="{% url 'grabsomore:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+    <!-- Link to registration page -->
+    <div style="margin-top: 20px;">
+        <p>Need to Shop ?
+            <a href="{% url 'eCommerce:products_list' %}">
+                <button>Go to Store</button>
+            </a>
+        </p>
+    </div>
+</body>
+</html>

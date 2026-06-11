@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Catalog</title>
+</head>
+<body>
+    <h1>Product Catalog</h1>
+
+    {% if products %}
+        <table border="1" cellpadding="10" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Add to Cart</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.description }}</td>
+                        <td>R{{ product.price }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'eCommerce:add_to_cart' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="item" value="{{ product.name }}">
+                                <input type="number" name="quantity" value="1" min="1" style="width: 50px;" />
+                                <button type="submit">Add</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No products available.</p>
+    {% endif %}
+
+    <br>
+    <!-- Navigation Buttons -->
+    <div style="margin-top: 20px;">
+        <a href="{% url 'eCommerce:main_cart_page' %}">
+            <button>🛒 View Cart</button>
+        </a>
+
+        <a href="{% url 'eCommerce:product_page' %}">
+            <button>🔍 Search Product</button>
+        </a>
+
+        <a href="{% url 'eCommerce:change_price' %}">
+            <button>💰 Change Price</button>
+        </a>
+
+        <form method="POST" action="{% url 'eCommerce:clear_cart' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="background-color:red; color:white;">🗑️ Clear Cart</button>
+        </form>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="{% url 'grabsomore:welcome' %}">
+            <button>Back Home</button>
+        </a>
+    </div>
+    
+</body>
+</html>
