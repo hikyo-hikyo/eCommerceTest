@@ -23,6 +23,7 @@ ALLOWED_HOSTS = []
 
 # Installed apps - these are all the apps Django will use in your project
 INSTALLED_APPS = [
+    'accounts',                    # Your custom app for user accounts
     'django.contrib.admin',        # Admin site
     'django.contrib.auth',         # User authentication system
     'django.contrib.contenttypes',  # Content type framework
@@ -30,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',     # Message framework
     'django.contrib.staticfiles',  # Manage static files like CSS and JS
 
-    'accounts',                    # Your custom app for user accounts
+
     'grabsomore',                  # Your custom app for auth
     'eCommerce',                  # Your custom app for eCommerce
 ]

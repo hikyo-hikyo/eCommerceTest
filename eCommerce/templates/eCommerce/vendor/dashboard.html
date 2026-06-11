@@ -1,0 +1,27 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}Vendor Dashboard{% endblock %}
+
+{% block content %}
+    <h1>Welcome, {{ request.user.username }} (Vendor)</h1>
+    <h2>Your Stores</h2>
+
+    <a href="{% url 'create_store' %}">+ Create New Store</a>
+    <br><br>
+
+    {% if stores %}
+        <ul>
+        {% for store in stores %}
+            <li>
+                <strong>{{ store.name }}</strong> - 
+                <a href="{% url 'vendor_store_products' store.id %}">View Products</a> |
+                <a href="{% url 'edit_store' store.id %}">Edit</a> |
+                <a href="{% url 'delete_store' store.id %}" 
+                   onclick="return confirm('Delete this store?')">Delete</a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You don't have any stores yet.</p>
+    {% endif %}
+{% endblock %}

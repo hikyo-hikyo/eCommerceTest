@@ -21,4 +21,16 @@ urlpatterns = [
 
     # URL to clear all items from the user's cart
     path('clear-cart/', views.clear_cart, name='clear_cart'),
+    # Vendor URLs
+    path('vendor/dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
+    path('vendor/store/create/', views.create_store, name='create_store'),
+    path('vendor/store/<int:store_id>/edit/',
+         views.edit_store, name='edit_store'),
+    path('vendor/store/<int:store_id>/delete/',
+         views.delete_store, name='delete_store'),
+
+    path('vendor/store/<int:store_id>/products/',
+         views.vendor_store_products, name='vendor_store_products'),
+    path('vendor/store/<int:store_id>/product/add/',
+         views.add_product, name='add_product'),
 ]

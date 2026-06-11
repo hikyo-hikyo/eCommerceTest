@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('grabsomore.urls')),
     path('ecommerce/', include('eCommerce.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('', include('eCommerce.urls')),
 ]

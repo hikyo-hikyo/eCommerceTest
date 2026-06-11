@@ -1,22 +1,35 @@
-from django.shortcuts import render, redirect  # To show HTML pages and redirect users
-from django.contrib.auth.models import User, Group, Permission  # Django's built-in user, group, and permission models
-from django.contrib.auth import authenticate, login, logout  # Functions to handle login and logout
-from django.http import HttpResponseRedirect, HttpResponse  # For redirecting users or sending responses
+# To show HTML pages and redirect users
+from django.shortcuts import render, redirect
+# Django's built-in user, group, and permission models
+from django.contrib.auth.models import User, Group, Permission
+# Functions to handle login and logout
+from django.contrib.auth import authenticate, login, logout
+# For redirecting users or sending responses
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy  # Helps get URLs by their names
-from django.contrib.auth.decorators import login_required  # Makes sure only logged-in users can access pages
+# Makes sure only logged-in users can access pages
+from django.contrib.auth.decorators import login_required
 from datetime import datetime
 import secrets  # For generating secure random tokens
 from datetime import timedelta
 from hashlib import sha1  # To hash tokens securely
-from django.utils import timezone  # Better way to handle dates and times in Django
-from django.core.exceptions import ObjectDoesNotExist  # For handling cases when an object is not found
-from .utils import generate_reset_url, build_email  # Helper functions for email and token generation
+# Better way to handle dates and times in Django
+from django.utils import timezone
+# For handling cases when an object is not found
+from django.core.exceptions import ObjectDoesNotExist
+# Helper functions for email and token generation
+from .utils import generate_reset_url, build_email
 from .models import ResetToken  # Our custom model to store reset tokens
 
 from django.core.mail import EmailMessage  # To send emails
-from django.contrib.auth.hashers import make_password  # To hash passwords before saving
+# To hash passwords before saving
+from django.contrib.auth.hashers import make_password
+from accounts.forms import UserRegistrationForm
+from django.contrib import messages
 
 # This function handles user login
+
+
 def login_user(request):
     # When the login form is submitted
     if request.method == 'POST':
@@ -35,7 +48,8 @@ def login_user(request):
             now = datetime.now()
             expiry_seconds = int((exp_date - now).total_seconds())
             if expiry_seconds > 0:
-                request.session.set_expiry(expiry_seconds)  # Set the expiry time for the session
+                # Set the expiry time for the session
+                request.session.set_expiry(expiry_seconds)
 
             # Save some user info in the session (optional, but useful)
             request.session['user_id'] = user.id
@@ -54,44 +68,29 @@ def login_user(request):
 # This function handles user registration (signing up)
 def register_user(request):
     if request.method == 'POST':
-        # Get data from the form
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        email = request.POST.get('email')
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()                     # This now creates accounts.User
+            login(request, user)
+            messages.success(
+                request, f"Account created successfully as {user.get_role_display()}!")
 
-        # Create a new user in the database
-        user = User.objects.create_user(username=username, password=password, email=email)
+            if user.is_vendor:
+                return redirect('vendor_dashboard')
+            else:
+                return redirect('home')            # or buyer home
+    else:
+        form = UserRegistrationForm()
 
-        # Try to add the new user to the 'Vendors' group (if it exists)
-        try:
-            vendors_group = Group.objects.get(name='Vendors')
-            user.groups.add(vendors_group)
-        except Group.DoesNotExist:
-            pass  # If group doesn't exist, just ignore
-
-        # Try to give the user permission to view products (fallback)
-        try:
-            permission = Permission.objects.get(codename='view_products', content_type__app_label='eCommerce')
-            user.user_permissions.add(permission)
-        except Permission.DoesNotExist:
-            pass  # Ignore if permission doesn't exist
-
-        user.save()  # Save all changes to the database
-
-        login(request, user)  # Log the new user in automatically
-
-        # Redirect to welcome page after registration
-        return redirect(reverse('grabsomore:welcome'))
-
-    # If user visits registration page, show the registration form
-    return render(request, 'grabsomore/register.html')
+    return render(request, 'grabsomore/register.html', {'form': form})
 
 
 # Helper function to change a user's password securely
 def change_user_password(username, new_password):
     user = User.objects.get(username=username)  # Find user by username
 
-    user.set_password(new_password)  # Set the new password (hashed automatically)
+    # Set the new password (hashed automatically)
+    user.set_password(new_password)
 
     user.save()  # Save changes to the database
 
@@ -130,7 +129,8 @@ def generate_reset_url(user):
 
     expiry_date = timezone.now() + timedelta(minutes=5)  # Token expires in 5 minutes
 
-    hashed_token = sha1(token.encode()).hexdigest()  # Hash the token to store securely
+    # Hash the token to store securely
+    hashed_token = sha1(token.encode()).hexdigest()
 
     # Save the hashed token and expiry date to the database
     reset_token = ResetToken.objects.create(
@@ -139,7 +139,8 @@ def generate_reset_url(user):
         expiry_date=expiry_date
     )
 
-    url += f"{token}/"  # Add the raw token (not hashed) to the URL for verification later
+    # Add the raw token (not hashed) to the URL for verification later
+    url += f"{token}/"
     return url
 
 
@@ -149,7 +150,8 @@ def send_password_reset(request):
         user_email = request.POST.get('email')
         try:
             user = User.objects.get(email=user_email)  # Find user by email
-            reset_url = generate_reset_url(user)  # Generate reset link with token
+            # Generate reset link with token
+            reset_url = generate_reset_url(user)
             email = build_email(user, reset_url)  # Create the email message
             email.send()  # Send the email
 
@@ -173,12 +175,14 @@ def reset_user_password(request, token):
     hashed_token = sha1(token.encode()).hexdigest()  # Hash the token from URL
 
     try:
-        user_token = ResetToken.objects.get(token=hashed_token)  # Look for token in DB
+        user_token = ResetToken.objects.get(
+            token=hashed_token)  # Look for token in DB
 
         # Check if the token expired
         if user_token.expiry_date.replace(tzinfo=None) < datetime.now():
             user_token.delete()  # Delete expired token
-            return render(request, 'grabsomore/password_reset_expired.html')  # Show expired token message
+            # Show expired token message
+            return render(request, 'grabsomore/password_reset_expired.html')
 
         # Save user ID and token in session to verify next step
         request.session['user_id'] = user_token.user.id

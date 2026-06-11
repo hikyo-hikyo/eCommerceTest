@@ -1,0 +1,33 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}{{ store.name }} - Products{% endblock %}
+
+{% block content %}
+    <h1>Products in {{ store.name }}</h1>
+    <a href="{% url 'add_product' store.id %}">+ Add New Product</a>
+    <br><br>
+
+    {% if products %}
+        <table border="1" cellpadding="10">
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>${{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>Edit | Delete</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No products yet.</p>
+    {% endif %}
+
+    <br>
+    <a href="{% url 'vendor_dashboard' %}">← Back to Dashboard</a>
+{% endblock %}

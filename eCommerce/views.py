@@ -3,6 +3,12 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from .models import Product
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Store, Product
+from accounts.decorators import vendor_required
+
 
 def view_product_page(request):
     user = request.user  # Get the current logged-in user
@@ -10,7 +16,8 @@ def view_product_page(request):
     # Check if user has permission to view products
     if user.has_perm('eCommerce.view_product') or user.has_perm('eCommerce.view_products'):
         if request.method == 'POST':
-            product_name = request.POST.get('product')  # Get product name from form submission
+            # Get product name from form submission
+            product_name = request.POST.get('product')
 
             if not product_name:
                 # If no product name given, show error on page
@@ -28,10 +35,10 @@ def view_product_page(request):
                 return render(request, 'eCommerce/product_page.html', {
                     'error': 'Product not found.'
                 })
-        
+
         # If page is opened normally (GET request), just show empty form
         return render(request, 'eCommerce/product_page.html')
-    
+
     # If user does not have permission to view products, show error
     return render(request, 'eCommerce/product_page.html', {
         'error': 'You do not have permission to view this product.'
@@ -44,8 +51,10 @@ def change_product_price(request):
     # Check if user has permission to change products
     if user.has_perm('eCommerce.change_product') or user.has_perm('eCommerce.change_products'):
         if request.method == 'POST':
-            product_name = request.POST.get('product')  # Get product name from form
-            new_price = request.POST.get('new_price')  # Get new price from form
+            product_name = request.POST.get(
+                'product')  # Get product name from form
+            new_price = request.POST.get(
+                'new_price')  # Get new price from form
 
             # Check both fields were filled out
             if not product_name or not new_price:
@@ -139,7 +148,7 @@ def retrieve_products(request):
 def show_user_cart(request):
     # Get list of products and quantities from the session cart
     cart_items = retrieve_products(request)
-    
+
     total_price = 0  # Start total price at zero
 
     # Calculate subtotal for each cart item and total price for whole cart
@@ -169,3 +178,76 @@ def clear_cart(request):
 
     # Redirect to cart page after clearing
     return redirect('eCommerce:main_cart_page')
+
+
+@vendor_required
+def vendor_dashboard(request):
+    stores = request.user.stores.all()
+    return render(request, 'eCommerce/vendor/dashboard.html', {'stores': stores})
+
+
+# CRUD
+@vendor_required
+def create_store(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        store = Store.objects.create(
+            vendor=request.user,
+            name=name,
+            description=description
+        )
+        messages.success(request, f"Store '{name}' created successfully!")
+        return redirect('vendor_dashboard')
+
+    return render(request, 'eCommerce/vendor/create_store.html')
+
+
+@vendor_required
+def edit_store(request, store_id):
+    store = get_object_or_404(Store, id=store_id, vendor=request.user)
+    if request.method == 'POST':
+        store.name = request.POST.get('name')
+        store.description = request.POST.get('description')
+        store.save()
+        messages.success(request, "Store updated successfully!")
+        return redirect('vendor_dashboard')
+
+    return render(request, 'eCommerce/vendor/edit_store.html', {'store': store})
+
+
+@vendor_required
+def delete_store(request, store_id):
+    store = get_object_or_404(Store, id=store_id, vendor=request.user)
+    store.delete()
+    messages.success(request, "Store deleted successfully!")
+    return redirect('vendor_dashboard')
+
+
+#  PRODUCT CRUD
+@vendor_required
+def add_product(request, store_id):
+    store = get_object_or_404(Store, id=store_id, vendor=request.user)
+
+    if request.method == 'POST':
+        product = Product.objects.create(
+            store=store,
+            name=request.POST.get('name'),
+            description=request.POST.get('description'),
+            price=request.POST.get('price'),
+            stock=request.POST.get('stock'),
+        )
+        messages.success(request, f"Product '{product.name}' added!")
+        return redirect('vendor_store_products', store_id=store.id)
+
+    return render(request, 'eCommerce/vendor/add_product.html', {'store': store})
+
+
+@vendor_required
+def vendor_store_products(request, store_id):
+    store = get_object_or_404(Store, id=store_id, vendor=request.user)
+    products = store.products.all()
+    return render(request, 'eCommerce/vendor/store_products.html', {
+        'store': store,
+        'products': products
+    })
