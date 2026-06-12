@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+
+    <h2>Thank you for your purchase, {{ order.buyer.username }}!</h2>
+    
+    <p><strong>Order Number:</strong> #{{ order.id }}</p>
+    <p><strong>Date:</strong> {{ order.order_date|date:"M d, Y h:i A" }}</p>
+
+    <h3>Order Summary</h3>
+    <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.product.price|floatformat:2 }}</td>
+                <td>${{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Total: ${{ total|floatformat:2 }}</h3>
+
+    <p>Thank you for shopping with us!</p>
+    <p>If you have any questions, feel free to reply to this email.</p>
+
+</body>
+</html>

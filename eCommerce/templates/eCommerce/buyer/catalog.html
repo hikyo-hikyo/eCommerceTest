@@ -1,0 +1,46 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}Product Catalog{% endblock %}
+
+{% block content %}
+    <h1>Product Catalog</h1>
+
+    <!-- Search Form -->
+    <form method="GET" style="margin-bottom: 30px;">
+        <input type="text" 
+               name="q" 
+               value="{{ query }}" 
+               placeholder="Search products by name..." 
+               style="padding: 10px; width: 300px; font-size: 16px;">
+        <button type="submit" style="padding: 10px 20px;">Search</button>
+        {% if query %}
+            <a href="{% url 'eCommerce:product_catalog' %}" style="margin-left: 10px;">Clear Search</a>
+        {% endif %}
+    </form>
+
+    {% if products %}
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            {% for product in products %}
+            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; width: 300px;">
+                <h3>{{ product.name }}</h3>
+                <p><strong>${{ product.price }}</strong></p>
+                <p>{{ product.description|truncatewords:25 }}</p>
+                <p><small>From: {{ product.store.name }}</small></p>
+                
+                <a href="{% url 'eCommerce:add_to_cart' product.id %}" 
+                   style="background:#28a745; color:white; padding:8px 16px; text-decoration:none; border-radius:5px; margin-right:8px;">
+                    Add to Cart
+                </a>
+                
+                <a href="{% url 'eCommerce:product_detail' product.id %}" 
+                   style="background:#007bff; color:white; padding:8px 16px; text-decoration:none; border-radius:5px;">
+                    View Details
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No products found matching "{{ query }}".</p>
+        <a href="{% url 'eCommerce:product_catalog' %}">Show All Products</a>
+    {% endif %}
+{% endblock %}

@@ -8,32 +8,48 @@
     <p><strong>Stock:</strong> {{ product.stock }}</p>
     <p>{{ product.description }}</p>
 
-    
     <a href="{% url 'eCommerce:add_to_cart' product.id %}" 
        style="background:#28a745; color:white; padding:10px 15px; text-decoration:none; border-radius:5px;">
         Add to Cart
     </a>
 
     <hr>
-
-    <h2>Reviews ({{ reviews.count }}) - Avg: {{ avg_rating }}/5</h2>
-
+     <h3>Leave a Review</h3>
     <form method="POST">
         {% csrf_token %}
-        <select name="rating">
-            <option value="5">5 Stars</option>
-            <option value="4">4 Stars</option>
-            <option value="3">3 Stars</option>
-            <option value="2">2 Stars</option>
-            <option value="1">1 Star</option>
+        <select name="rating" required>
+            <option value="">Select Rating</option>
+            <option value="5">5 Stars - Excellent</option>
+            <option value="4">4 Stars - Good</option>
+            <option value="3">3 Stars - Average</option>
+            <option value="2">2 Stars - Below Average</option>
+            <option value="1">1 Star - Poor</option>
         </select><br><br>
-        <textarea name="comment" rows="4" cols="50" placeholder="Write your review..."></textarea><br><br>
+        
+        <textarea name="comment" rows="5" cols="50" placeholder="Write your review here..."></textarea><br><br>
+        
         <button type="submit">Submit Review</button>
     </form>
 
+    <hr>
+    <h2>Reviews ({{ reviews.count }}) - Avg: {{ avg_rating }}/5</h2>
+
     {% for review in reviews %}
-        <p><strong>{{ review.buyer.username }}:</strong> {{ review.rating }}★</p>
-        <p>{{ review.comment }}</p>
-        <hr>
+        <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;">
+            <p>
+                <strong>{{ review.buyer.username }}</strong> 
+                — {{ review.rating }}★ 
+                {% if review.is_verified %}
+                    <span style="color: green; font-weight: bold;">Verified Purchase ✓</span>
+                {% else %}
+                    <span style="color: orange;">Unverified Review</span>
+                {% endif %}
+            </p>
+            <p>{{ review.comment }}</p>
+            <small>{{ review.created_at|date:"M d, Y" }}</small>
+        </div>
+    {% empty %}
+        <p>No reviews yet. Be the first to review!</p>
     {% endfor %}
+   
 {% endblock %}

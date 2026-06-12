@@ -1,12 +1,56 @@
 {% extends 'eCommerce/base.html' %}
 
-{% block title %}My Cart - Debug{% endblock %}
+{% block title %}My Cart{% endblock %}
 
 {% block content %}
-    <h1 style="color: red;">DEBUG: TEMPLATE IS LOADING</h1>
-    <p>This text should be visible below the navigation bar.</p>
-    <p>Debug message from view: {{ debug_message }}</p>
-    
-    <hr>
-    <a href="{% url 'eCommerce:buyer_home' %}">← Go Back to Shop</a>
+    <h1>My Shopping Cart</h1>
+
+    {% if cart_items %}
+        <table cellpadding="12" style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background:#f8f9fa;">
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>${{ item.product.price|floatformat:2 }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.subtotal|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'eCommerce:remove_from_cart' item.id %}" 
+                           onclick="return confirm('Remove this item?')"
+                           style="color: red;">Remove</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Total: <strong>${{ total_price|floatformat:2 }}</strong></h2>
+
+        <br>
+        <a href="{% url 'eCommerce:buyer_home' %}" 
+           style="background:#007bff; color:white; padding:12px 20px; text-decoration:none; border-radius:5px; margin-right:10px;">
+            ← Continue Shopping
+        </a>
+        
+        <a href="{% url 'eCommerce:checkout' %}" 
+           style="background:#28a745; color:white; padding:12px 20px; text-decoration:none; border-radius:5px;">
+            Proceed to Checkout
+        </a>
+
+    {% else %}
+        <p style="font-size:18px;">Your cart is empty.</p>
+        <a href="{% url 'eCommerce:buyer_home' %}" 
+           style="background:#007bff; color:white; padding:12px 20px; text-decoration:none; border-radius:5px;">
+            Browse Products
+        </a>
+    {% endif %}
 {% endblock %}

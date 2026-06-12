@@ -21,8 +21,17 @@ from .models import ResetToken
 from .utils import build_email
 
 
-# ===================== LOGIN =====================
+# LOGIN
+
 def login_user(request):
+    # If user is already logged in, redirect them away from login page
+    if request.user.is_authenticated:
+        if request.user.is_vendor:
+            return redirect('eCommerce:vendor_dashboard')
+        else:
+            return redirect('eCommerce:buyer_home')
+
+    # Normal login flow for non-logged in users
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -36,7 +45,7 @@ def login_user(request):
             if user.is_vendor:
                 return redirect('eCommerce:vendor_dashboard')
             else:
-                return redirect('grabsomore:welcome')
+                return redirect('eCommerce:buyer_home')
         else:
             messages.error(request, "Invalid username or password")
             return render(request, 'grabsomore/login.html')
@@ -44,43 +53,40 @@ def login_user(request):
     return render(request, 'grabsomore/login.html')
 
 
-# ===================== REGISTER =====================
-# grabsomore/views.py
+# REGISTER
 def register_user(request):
+    if request.user.is_authenticated:
+        if request.user.is_vendor:
+            return redirect('eCommerce:vendor_dashboard')
+        else:
+            return redirect('eCommerce:buyer_home')
+
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
-
         if form.is_valid():
             user = form.save()
             login(request, user)
             messages.success(
-                request, f"✅ Account created successfully! Welcome {user.username}")
-            return redirect('eCommerce:buyer_home')
-        else:
-            # Force show errors
-            messages.error(request, "Please correct the errors below.")
-            print("=== FORM ERRORS ===")
-            print(form.errors)          # ← Check your terminal!
+                request, f"Account created successfully as {user.get_role_display()}!")
+
+            if user.is_vendor:
+                return redirect('eCommerce:vendor_dashboard')
+            else:
+                return redirect('eCommerce:buyer_home')
     else:
         form = UserRegistrationForm()
 
     return render(request, 'grabsomore/register.html', {'form': form})
 
 
-# ===================== LOGOUT =====================
+# LOGOUT
 def logout_user(request):
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect('grabsomore:login')
 
 
-# ===================== WELCOME =====================
-@login_required(login_url=reverse_lazy('grabsomore:login'))
-def welcome(request):
-    return render(request, 'grabsomore/welcome.html')
-
-
-# ===================== PASSWORD RESET =====================
+# PASSWORD RESET
 def change_user_password(username, new_password):
     user = User.objects.get(username=username)
     user.set_password(new_password)

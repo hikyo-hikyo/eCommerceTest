@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Product
+from .models import Product, Order, Order_Item
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,6 +11,10 @@ from accounts.decorators import vendor_required
 from accounts.decorators import buyer_required
 from .models import Product, Store, Review, Cart, Cart_Item
 from django.db.models import Avg
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
+import random
 
 
 def view_product_page(request):
@@ -95,92 +99,11 @@ def change_product_price(request):
     })
 
 
-def add_item_to_cart(request):
-    # Get item name and quantity from POST form submission
-    item = request.POST.get('item')
-    quantity = request.POST.get('quantity')
-
-    # If either is missing, redirect to cart page without changing anything
-    if not item or not quantity:
-        return redirect('eCommerce:main_cart_page')
-
-    try:
-        # Convert quantity to integer, and set to 1 if invalid or less than 1
-        quantity = int(quantity)
-        if quantity < 1:
-            quantity = 1
-    except ValueError:
-        quantity = 1
-
-    # Get existing cart from session, or empty dictionary if none
-    cart = request.session.get('cart', {})
-
-    # If item already in cart, add to existing quantity, otherwise add new item
-    if item in cart:
-        cart[item] += quantity
-    else:
-        cart[item] = quantity
-
-    # Save updated cart back into session so it persists
-    request.session['cart'] = cart
-    request.session.modified = True  # Mark session as changed
-
-    # Redirect user to cart page after adding item
-    return redirect(reverse('eCommerce:main_cart_page'))
-
-
-def retrieve_products(request):
-    products = []
-    session = request.session
-
-    # If cart exists in session, load products and their quantities
-    if 'cart' in session:
-        for name, quantity in session['cart'].items():
-            try:
-                # Get product from database by name
-                product = Product.objects.get(name=name)
-                # Add product and quantity as a dictionary to list
-                products.append({'product': product, 'quantity': quantity})
-            except Product.DoesNotExist:
-                # Skip if product not found (may have been deleted)
-                pass
-
-    return products
-
-
-def show_user_cart(request):
-    # Get list of products and quantities from the session cart
-    cart_items = retrieve_products(request)
-
-    total_price = 0  # Start total price at zero
-
-    # Calculate subtotal for each cart item and total price for whole cart
-    for item in cart_items:
-        subtotal = item['product'].price * item['quantity']
-        item['subtotal'] = subtotal  # Add subtotal to item dictionary
-        total_price += subtotal
-
-    # Render cart page, passing in items and total price
-    return render(request, 'eCommerce/main_cart_page.html', {
-        'cart': cart_items,
-        'total_price': total_price,
-    })
-
-
 def list_products(request):
     # Get all products from database
     products = Product.objects.all()
     # Show products list page, passing products to template
     return render(request, 'eCommerce/products_list.html', {'products': products})
-
-
-def clear_cart(request):
-    # Empty the cart by setting session cart to empty dictionary
-    request.session['cart'] = {}
-    request.session.modified = True  # Mark session as changed
-
-    # Redirect to cart page after clearing
-    return redirect('eCommerce:main_cart_page')
 
 
 @vendor_required
@@ -195,13 +118,15 @@ def create_store(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description')
+
         store = Store.objects.create(
             vendor=request.user,
             name=name,
             description=description
         )
+
         messages.success(request, f"Store '{name}' created successfully!")
-        return redirect('vendor_dashboard')
+        return redirect('eCommerce:vendor_dashboard')
 
     return render(request, 'eCommerce/vendor/create_store.html')
 
@@ -214,7 +139,7 @@ def edit_store(request, store_id):
         store.description = request.POST.get('description')
         store.save()
         messages.success(request, "Store updated successfully!")
-        return redirect('vendor_dashboard')
+        return redirect('eCommerce:vendor_dashboard')
 
     return render(request, 'eCommerce/vendor/edit_store.html', {'store': store})
 
@@ -224,7 +149,7 @@ def delete_store(request, store_id):
     store = get_object_or_404(Store, id=store_id, vendor=request.user)
     store.delete()
     messages.success(request, "Store deleted successfully!")
-    return redirect('vendor_dashboard')
+    return redirect('eCommerce:vendor_dashboard')
 
 
 #  PRODUCT CRUD
@@ -241,7 +166,7 @@ def add_product(request, store_id):
             stock=request.POST.get('stock'),
         )
         messages.success(request, f"Product '{product.name}' added!")
-        return redirect('vendor_store_products', store_id=store.id)
+        return redirect('eCommerce:vendor_store_products', store_id=store.id)
 
     return render(request, 'eCommerce/vendor/add_product.html', {'store': store})
 
@@ -255,24 +180,34 @@ def vendor_store_products(request, store_id):
         'products': products
     })
 
-# @buyer means that the user must be logged in as a buyer
 
+# @buyer means that the user must be logged in as a buyer
+# BUYER ---------------------------------------------------------------------------------------
 
 @buyer_required
 def buyer_home(request):
-    """Main buyer homepage"""
-    products = Product.objects.filter(is_active=True).select_related('store')
+    """Buyer homepage - Featured Products"""
+
+    # Get all active products and pick 3 random ones
+    all_products = list(Product.objects.filter(
+        is_active=True).select_related('store'))
+
+    if len(all_products) >= 3:
+        featured_products = random.sample(all_products, 3)
+    else:
+        featured_products = all_products  # Show all if less than 3
+
+    # Optional: Get all stores for browsing
     stores = Store.objects.all()
 
     return render(request, 'eCommerce/buyer/home.html', {
-        'products': products,
+        'featured_products': featured_products,
         'stores': stores,
     })
 
 
 @buyer_required
 def product_detail(request, product_id):
-    """View single product + reviews"""
     product = get_object_or_404(Product, id=product_id, is_active=True)
     reviews = product.reviews.all().order_by('-created_at')
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
@@ -280,14 +215,22 @@ def product_detail(request, product_id):
     if request.method == 'POST':
         rating = request.POST.get('rating')
         comment = request.POST.get('comment')
+
+        # Check if user has purchased this product
+        has_purchased = Order_Item.objects.filter(
+            order__buyer=request.user,
+            product=product
+        ).exists()
+
         Review.objects.create(
             product=product,
             buyer=request.user,
             rating=rating,
-            comment=comment
+            comment=comment,
+            is_verified=has_purchased
         )
         messages.success(request, "Review submitted successfully!")
-        return redirect('product_detail', product_id=product.id)
+        return redirect('eCommerce:product_detail', product_id=product.id)
 
     return render(request, 'eCommerce/buyer/product_detail.html', {
         'product': product,
@@ -320,10 +263,23 @@ def add_to_cart(request, product_id):
 
 @buyer_required
 def view_cart(request):
+    try:
+        cart = Cart.objects.get(buyer=request.user)
+        cart_items = cart.items.select_related('product').all()
+
+        # Add subtotal for each item
+        for item in cart_items:
+            item.subtotal = item.product.price * item.quantity   # ← Add this
+
+        total = sum(item.subtotal for item in cart_items)
+
+    except Cart.DoesNotExist:
+        cart_items = []
+        total = 0
+
     return render(request, 'eCommerce/buyer/cart.html', {
-        'cart_items': [],
-        'total_price': 0,
-        'debug_message': 'Template is being loaded from view_cart'
+        'cart_items': cart_items,
+        'total_price': total,
     })
 
 
@@ -345,3 +301,93 @@ def remove_from_cart(request, item_id):
         messages.error(request, "Item not found in your cart.")
 
     return redirect('eCommerce:main_cart_page')
+
+
+@buyer_required
+def checkout(request):
+    try:
+        cart = Cart.objects.get(buyer=request.user)
+        cart_items = cart.items.select_related('product').all()
+
+        if not cart_items:
+            messages.error(request, "Your cart is empty!")
+            return redirect('eCommerce:main_cart_page')
+
+        total = sum(item.product.price * item.quantity for item in cart_items)
+
+        # Create Order
+        order = Order.objects.create(
+            buyer=request.user,
+            total_amount=total
+        )
+
+        # Create Order Items
+        for item in cart_items:
+            Order_Item.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                price_at_time=item.product.price
+            )
+
+        # Send Email
+        subject = f"Order Confirmation - #{order.id}"
+        html_message = render_to_string('eCommerce/buyer/invoice_email.html', {
+            'order': order,
+            'items': cart_items,
+            'total': total,
+        })
+
+        email = EmailMessage(
+            subject=subject,
+            body=html_message,
+            from_email=settings.EMAIL_HOST_USER,      # ← Use configured email
+            to=[request.user.email],
+        )
+        email.content_subtype = "html"
+        email.send(fail_silently=False)
+
+        # Clear Cart
+        cart.items.all().delete()
+
+        messages.success(
+            request,
+            f"Checkout successful! Receipt sent to <strong>{request.user.email}</strong>"
+        )
+        return redirect('eCommerce:buyer_home')
+
+    except Cart.DoesNotExist:
+        messages.error(request, "Cart not found.")
+        return redirect('eCommerce:buyer_home')
+    except Exception as e:
+        messages.error(request, f"Checkout failed: {e}")
+        return redirect('eCommerce:main_cart_page')
+
+
+@buyer_required
+def product_catalog(request):
+    """Full product catalog with search"""
+    query = request.GET.get('q', '')  # Get search term from URL
+
+    products = Product.objects.filter(is_active=True).select_related(
+        'store').order_by('-created_at')
+
+    if query:
+        # Search by name (case-insensitive)
+        products = products.filter(name__icontains=query)
+
+    return render(request, 'eCommerce/buyer/catalog.html', {
+        'products': products,
+        'query': query,   # Pass search term back to template
+    })
+
+
+@buyer_required
+def store_detail(request, store_id):
+    store = get_object_or_404(Store, id=store_id)
+    products = store.products.filter(is_active=True).order_by('name')
+
+    return render(request, 'eCommerce/buyer/store_detail.html', {
+        'store': store,
+        'products': products,
+    })
