@@ -5,15 +5,17 @@ from accounts.models import User
 class Product(models.Model):
     name = models.CharField(max_length=100)
     # The name of the product, like "T-shirt" or "Laptop"
-
     description = models.TextField(blank=True)
     # A longer description of the product; it’s optional (can be empty)
-
     price = models.DecimalField(max_digits=10, decimal_places=2)
     # The price of the product, with up to 10 digits total and 2 decimal places for cents
-
     stock = models.PositiveIntegerField()
     # How many items are available in stock (only positive numbers allowed)
+
+    is_active = models.BooleanField(default=True)
+
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         # This makes it easier to see the product’s name when printing or in admin pages

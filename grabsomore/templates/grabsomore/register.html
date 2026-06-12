@@ -1,37 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-</head>
-<body>
-    <h2>Register An Account</h2>
+{% extends 'eCommerce/base.html' %}
 
-    <!-- This form sends registration info to the backend -->
-    <form method="POST" action="{% url 'grabsomore:register' %}">
-        {% csrf_token %}  <!-- Protects against cross-site attacks -->
+{% block title %}Register{% endblock %}
 
-        <!-- New username input -->
-        <label for="username">Username:</label>
-        <input type="text" name="username" required><br><br>
+{% block content %}
+    <h2>Create New Account</h2>
 
-        <!-- Email address input -->
-        <label for="email">Email:</label>
-        <input type="email" name="email" required><br><br>
-
-        <!-- Password input -->
-        <label for="password">Password:</label>
-        <input type="password" name="password" required><br><br>
-
-        <!-- Submit button -->
-        <button type="submit">Register</button>
-    </form>
-
-    <!-- Error message display -->
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color: red; font-weight: bold;">{{ message }}</p>
+        {% endfor %}
     {% endif %}
 
-    <!-- Link to login page -->
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <br><br>
+        <button type="submit" style="padding: 12px 25px; font-size: 16px;">Register</button>
+    </form>
+
     <p>Already have an account? <a href="{% url 'grabsomore:login' %}">Login here</a></p>
-</body>
-</html>
+{% endblock %}

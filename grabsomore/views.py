@@ -36,7 +36,7 @@ def login_user(request):
             if user.is_vendor:
                 return redirect('eCommerce:vendor_dashboard')
             else:
-                return redirect('eCommerce:buyer_home')
+                return redirect('grabsomore:welcome')
         else:
             messages.error(request, "Invalid username or password")
             return render(request, 'grabsomore/login.html')
@@ -45,20 +45,22 @@ def login_user(request):
 
 
 # ===================== REGISTER =====================
+# grabsomore/views.py
 def register_user(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
+
         if form.is_valid():
             user = form.save()
-            login(request, user)                    # Auto-login after register
+            login(request, user)
             messages.success(
-                request, f"Account created successfully as {user.get_role_display()}!"
-            )
-
-            if user.is_vendor:
-                return redirect('eCommerce:vendor_dashboard')
-            else:
-                return redirect('eCommerce:buyer_home')
+                request, f"✅ Account created successfully! Welcome {user.username}")
+            return redirect('eCommerce:buyer_home')
+        else:
+            # Force show errors
+            messages.error(request, "Please correct the errors below.")
+            print("=== FORM ERRORS ===")
+            print(form.errors)          # ← Check your terminal!
     else:
         form = UserRegistrationForm()
 

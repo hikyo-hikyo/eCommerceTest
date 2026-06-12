@@ -260,9 +260,9 @@ def vendor_store_products(request, store_id):
 
 @buyer_required
 def buyer_home(request):
-    """Main buyer homepage - show all active products"""
+    """Main buyer homepage"""
     products = Product.objects.filter(is_active=True).select_related('store')
-    stores = Store.objects.filter(is_active=True)
+    stores = Store.objects.all()
 
     return render(request, 'eCommerce/buyer/home.html', {
         'products': products,

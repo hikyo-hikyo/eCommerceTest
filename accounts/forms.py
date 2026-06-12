@@ -1,13 +1,13 @@
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from accounts.models import User
+from .models import User
 
 
 class UserRegistrationForm(UserCreationForm):
     role = forms.ChoiceField(
         choices=User.ROLE_CHOICES,
-        widget=forms.RadioSelect(attrs={'class': 'role-radio'}),
+        widget=forms.RadioSelect,
         label="Register as"
     )
 

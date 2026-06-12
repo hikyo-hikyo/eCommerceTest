@@ -124,3 +124,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your_email@gmail.com'
 # Your email password or app password
 EMAIL_HOST_PASSWORD = 'your_app_password'
+
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
