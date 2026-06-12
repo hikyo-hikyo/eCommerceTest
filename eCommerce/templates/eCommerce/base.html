@@ -14,17 +14,35 @@
     </style>
 </head>
 <body>
-    <nav>
-        <a href="{% url 'eCommerce:vendor_dashboard' %}">Vendor Dashboard</a>
-        <a href="{% url 'eCommerce:create_store' %}">Create Store</a>
-        <a href="/">Home</a>
-        <a href="{% url 'logout' %}">Logout</a>
+ <nav>
+
+        {% if request.user.is_authenticated %}
+            {% if request.user.is_vendor %}
+                <!-- Vendor Navigation -->
+                <a href="/">Home</a>
+                <a href="{% url 'eCommerce:vendor_dashboard' %}">Vendor Dashboard</a>
+                <a href="{% url 'eCommerce:create_store' %}">Create Store</a>
+            {% else %}
+                <!-- Buyer Navigation -->
+                <a href="/">Home</a>
+                <a href="{% url 'eCommerce:buyer_home' %}">Product Catalog</a>
+                <a href="{% url 'eCommerce:main_cart_page' %}">My Cart</a>
+            {% endif %}
+
+            <a style="float: right;" href="{% url 'grabsomore:logout' %}">Logout ({{ request.user.username }})</a>
+        {% else %}
+            <!-- Not logged in -->
+            <a href="{% url 'grabsomore:login' %}">Login</a>
+            <a href="{% url 'grabsomore:register' %}">Register</a>
+        {% endif %}
     </nav>
 
     <div class="container">
         {% if messages %}
             {% for message in messages %}
-                <div class="message success">{{ message }}</div>
+                <div class="message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                    {{ message }}
+                </div>
             {% endfor %}
         {% endif %}
 

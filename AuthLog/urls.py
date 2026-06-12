@@ -18,15 +18,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+app_name = 'eCommerce'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    # Login/Register at root
     path('', include('grabsomore.urls')),
-
-    # Shop URLs with explicit namespace
     path('shop/', include('eCommerce.urls', namespace='eCommerce')),
-
-    # Optional
     path('accounts/', include('accounts.urls')),
 ]

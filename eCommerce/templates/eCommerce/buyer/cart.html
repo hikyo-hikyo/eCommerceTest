@@ -1,0 +1,12 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}My Cart - Debug{% endblock %}
+
+{% block content %}
+    <h1 style="color: red;">DEBUG: TEMPLATE IS LOADING</h1>
+    <p>This text should be visible below the navigation bar.</p>
+    <p>Debug message from view: {{ debug_message }}</p>
+    
+    <hr>
+    <a href="{% url 'eCommerce:buyer_home' %}">← Go Back to Shop</a>
+{% endblock %}

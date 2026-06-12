@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 """
 
 from pathlib import Path
+import os
 
 # This sets the base directory of your project so you can refer to files easily
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,12 +119,15 @@ EMAIL_FILE_PATH = "/emails/"
 EMAIL_HOST = 'smtp.gmail.com'                                 # Gmail SMTP server
 # SMTP port for TLS
 EMAIL_PORT = 587
-# Use TLS for security
+# Use TLS for securitywhat
 EMAIL_USE_TLS = True
 # Your email address used to send mails
-EMAIL_HOST_USER = 'your_email@gmail.com'
+# EMAIL_HOST_USER = 'your_email@gmail.com'
 # Your email password or app password
-EMAIL_HOST_PASSWORD = 'your_app_password'
+# EMAIL_HOST_PASSWORD = 'your_app_password'
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 STATIC_URL = '/static/'
 

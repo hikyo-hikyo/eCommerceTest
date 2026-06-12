@@ -3,32 +3,19 @@ from accounts.models import User
 
 
 class Product(models.Model):
+    store = models.ForeignKey(
+        'Store', on_delete=models.CASCADE, related_name='products')  # ← Must have this
+
     name = models.CharField(max_length=100)
-    # The name of the product, like "T-shirt" or "Laptop"
     description = models.TextField(blank=True)
-    # A longer description of the product; it’s optional (can be empty)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    # The price of the product, with up to 10 digits total and 2 decimal places for cents
-    stock = models.PositiveIntegerField()
-    # How many items are available in stock (only positive numbers allowed)
-
+    stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
-
     image = models.ImageField(upload_to='products/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        # This makes it easier to see the product’s name when printing or in admin pages
         return self.name
-
-    class Meta:
-        # These are special permissions for users who can add, change, delete, or view products
-        permissions = [
-            ("add_products", "Can add products"),
-            ("change_products", "Can change products"),
-            ("delete_products", "Can delete products"),
-            ("view_products", "Can view products"),
-        ]
 
 
 class Store(models.Model):
@@ -60,9 +47,18 @@ class Cart(models.Model):
         User, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Cart of {self.buyer.username}"
+
 
 class Cart_Item(models.Model):
     cart = models.ForeignKey(
         Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ('cart', 'product')   # Prevent duplicate items
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"

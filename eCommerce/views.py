@@ -298,12 +298,12 @@ def product_detail(request, product_id):
 
 @buyer_required
 def add_to_cart(request, product_id):
-    """Add product to buyer's cart (using model, not session)"""
     product = get_object_or_404(Product, id=product_id, is_active=True)
 
-    # Get or create cart for this buyer
-    cart, created = Cart.objects.get_or_create(buyer=request.user)
+    # Get or create cart
+    cart, _ = Cart.objects.get_or_create(buyer=request.user)
 
+    # Get or create cart item
     cart_item, created = Cart_Item.objects.get_or_create(
         cart=cart,
         product=product,
@@ -315,30 +315,33 @@ def add_to_cart(request, product_id):
         cart_item.save()
 
     messages.success(request, f"{product.name} added to cart!")
-    return redirect('main_cart_page')
+    return redirect('eCommerce:buyer_home')
 
 
 @buyer_required
 def view_cart(request):
-    """Show cart with totals"""
-    try:
-        cart = Cart.objects.get(buyer=request.user)
-        items = cart.items.select_related('product')
-
-        total = sum(item.product.price * item.quantity for item in items)
-    except Cart.DoesNotExist:
-        items = []
-        total = 0
-
-    return render(request, 'eCommerce/main_cart_page.html', {
-        'cart': items,
-        'total_price': total,
+    return render(request, 'eCommerce/buyer/cart.html', {
+        'cart_items': [],
+        'total_price': 0,
+        'debug_message': 'Template is being loaded from view_cart'
     })
 
 
 @buyer_required
 def remove_from_cart(request, item_id):
-    """Remove item from cart"""
-    Cart_Item.objects.filter(id=item_id, cart__buyer=request.user).delete()
-    messages.success(request, "Item removed from cart.")
-    return redirect('main_cart_page')
+    """Remove a specific item from the user's cart"""
+    try:
+        # Only allow removing items that belong to the current user
+        cart_item = Cart_Item.objects.get(
+            id=item_id,
+            cart__buyer=request.user
+        )
+        product_name = cart_item.product.name
+        cart_item.delete()
+
+        messages.success(
+            request, f"{product_name} was removed from your cart.")
+    except Cart_Item.DoesNotExist:
+        messages.error(request, "Item not found in your cart.")
+
+    return redirect('eCommerce:main_cart_page')
