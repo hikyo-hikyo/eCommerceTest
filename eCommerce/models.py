@@ -4,7 +4,7 @@ from accounts.models import User
 
 class Product(models.Model):
     store = models.ForeignKey(
-        'Store', on_delete=models.CASCADE, related_name='products')  # ← Must have this
+        'Store', on_delete=models.CASCADE, related_name='products')
 
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -22,7 +22,7 @@ class Store(models.Model):
     vendor = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='stores'      # ← This must be 'stores'
+        related_name='stores'      # This must be 'stores'
     )
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)

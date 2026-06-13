@@ -29,7 +29,4 @@ urlpatterns = [
     path('vendor/store/<int:store_id>/product/add/',
          views.add_product, name='add_product'),
 
-    # Old URLs (you can remove these if not needed)
-    # path('product/', views.view_product_page, name='product_page'),
-    # path('change-price/', views.change_product_price, name='change_price'),
 ]

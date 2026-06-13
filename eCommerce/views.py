@@ -269,7 +269,7 @@ def view_cart(request):
 
         # Add subtotal for each item
         for item in cart_items:
-            item.subtotal = item.product.price * item.quantity   # ← Add this
+            item.subtotal = item.product.price * item.quantity   # Add this
 
         total = sum(item.subtotal for item in cart_items)
 
@@ -341,7 +341,7 @@ def checkout(request):
         email = EmailMessage(
             subject=subject,
             body=html_message,
-            from_email=settings.EMAIL_HOST_USER,      # ← Use configured email
+            from_email=settings.EMAIL_HOST_USER,      # Use configured email
             to=[request.user.email],
         )
         email.content_subtype = "html"
