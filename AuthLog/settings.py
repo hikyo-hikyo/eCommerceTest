@@ -10,6 +10,10 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 from pathlib import Path
 import os
 
+from environ import Env
+env = Env()
+Env.read_env()
+
 # This sets the base directory of your project so you can refer to files easily
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -116,18 +120,33 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # Path to save emails if using file backend
 EMAIL_FILE_PATH = "/emails/"
-EMAIL_HOST = 'smtp.gmail.com'                                 # Gmail SMTP server
+# EMAIL_HOST = 'smtp.gmail.com'                                 # Gmail SMTP server
 # SMTP port for TLS
-EMAIL_PORT = 587
+# EMAIL_PORT = 587
 # Use TLS for securitywhat
-EMAIL_USE_TLS = True
+
 # Your email address used to send mails
 # EMAIL_HOST_USER = 'your_email@gmail.com'
 # Your email password or app password
 # EMAIL_HOST_PASSWORD = 'your_app_password'
 
+EMAIL_USE_TLS = True
+# An old way I tried to get info from .env. It didn't work
+'''EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_Port = os.getenv('EMAIL_PORT')'''
+
+env_host = env('EMAIL_HOST')
+env_host_user = env('EMAIL_HOST_USER')
+env_host_password = env('EMAIL_HOST_PASSWORD')
+env_port = env('EMAIL_PORT')
+
+
+EMAIL_HOST = env_host
+EMAIL_HOST_USER = env_host_user
+EMAIL_HOST_PASSWORD = env_host_password
+EMAIL_PORT = env_port
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 STATIC_URL = '/static/'

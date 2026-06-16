@@ -43,20 +43,20 @@
     <!-- Navigation Buttons -->
     <div style="margin-top: 20px;">
         <a href="{% url 'eCommerce:products_list' %}">
-            <button>🏪 Continue Shopping</button>
+            <button>Continue Shopping</button>
         </a>
 
         <a href="{% url 'eCommerce:product_page' %}">
-            <button>🔍 Search Product</button>
+            <button>Search Product</button>
         </a>
 
         <a href="{% url 'eCommerce:change_price' %}">
-            <button>💰 Change Price</button>
+            <button>Change Price</button>
         </a>
 
         <form method="POST" action="{% url 'eCommerce:clear_cart' %}" style="display:inline;">
             {% csrf_token %}
-            <button type="submit" style="background-color:red; color:white;">🗑️ Clear Cart</button>
+            <button type="submit" style="background-color:red; color:white;">Clear Cart</button>
         </form>
     </div>
 
