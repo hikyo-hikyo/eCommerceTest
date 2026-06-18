@@ -17,6 +17,7 @@ Including another URLconf
 # AuthLog/urls.py
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 app_name = 'eCommerce'
 
@@ -25,4 +26,12 @@ urlpatterns = [
     path('', include('grabsomore.urls')),
     path('shop/', include('eCommerce.urls', namespace='eCommerce')),
     path('accounts/', include('accounts.urls')),
+
+    path('api/', include('eCommerce.api_urls')),
+    path('api/', include('eCommerce.urls')),
+    path('api/auth/', include('rest_framework.urls')),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('reddit/', include('eCommerce.urls')),
 ]

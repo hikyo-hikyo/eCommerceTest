@@ -1,20 +1,78 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Product, Order, Order_Item
+from .models import Product, Order, Order_Item, Store, Product, Review
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Store, Product
-from accounts.decorators import vendor_required
-from accounts.decorators import buyer_required
+from accounts.decorators import vendor_required, buyer_required
 from .models import Product, Store, Review, Cart, Cart_Item
 from django.db.models import Avg
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
 import random
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .serializers import StoreSerializer, ProductSerializer, ReviewSerializer
+from . import serializers
+from .functions.reddit import get_reddit_posts
+
+
+def reddit_feed(request):
+    posts = get_reddit_posts(subreddit="productreview", limit=15)
+    return render(request, 'eCommerce/reddit_feed.html', {'posts': posts})
+
+
+class StoreViewSet(viewsets.ModelViewSet):
+    queryset = Store.objects.all()
+    serializer_class = StoreSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        serializer.save(vendor=self.request.user)  # Only vendor creates store
+
+    @action(detail=True, methods=['get'])
+    def products(self, request, pk=None):
+        store = self.get_object()
+        products = store.products.all()
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    # or your own logic
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        # Get product from request data and set user automatically
+        product_id = self.request.data.get('product')
+        if not product_id:
+            raise serializers.ValidationError(
+                {"product": "This field is required."})
+
+        serializer.save(
+            user=self.request.user,
+            product_id=product_id
+        )
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'destroy']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
 
 def view_product_page(request):

@@ -1,0 +1,32 @@
+{% extends 'eCommerce/base.html' %}
+
+{% block title %}Review Feed{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>r/productreview - Latest Reviews</title>
+</head>
+{% block content %}
+<body>
+    <h1>Latest Posts from r/productreview</h1>
+    <p><a href="https://www.reddit.com/r/productreview/" target="_blank">Visit Subreddit →</a></p>
+
+    {% if posts %}
+        {% for post in posts %}
+        <div class="post">
+            <h2><a href="{{ post.url }}" target="_blank">{{ post.title }}</a></h2>
+            <div class="meta">
+                Posted by u/{{ post.author }} • Score: {{ post.score }}
+            </div>
+            {% if post.selftext %}
+                <p>{{ post.selftext }}...</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No posts found or Reddit is rate-limiting us.</p>
+    {% endif %}
+</body>
+</html>
+{% endblock %}
