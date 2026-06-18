@@ -9,19 +9,21 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 
 from pathlib import Path
 import os
+import environ
 
-from environ import Env
-env = Env()
-Env.read_env()
 
 # This sets the base directory of your project so you can refer to files easily
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+env = environ.Env(DEBUG=(bool, False))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 # SECURITY WARNING: keep the secret key secret in production!
-SECRET_KEY = 'django-insecure-56es-13q3og*-2i9l=#wwnj%^-yex#g6vxo-)bk2j!)7q$37$$'
+SECRET_KEY = env('SECRET_KEY')
 
 # Debug mode means you see detailed error messages, only use in development
-DEBUG = True
+DEBUG = env('DEBUG')
 
 # Hosts/domain names that this Django site can serve
 ALLOWED_HOSTS = []
@@ -39,7 +41,19 @@ INSTALLED_APPS = [
 
     'grabsomore',                  # Your custom app for auth
     'eCommerce',                  # Your custom app for eCommerce
+
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
 
 # Middleware are layers that process requests/responses, like security and session management
 MIDDLEWARE = [
@@ -120,15 +134,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # Path to save emails if using file backend
 EMAIL_FILE_PATH = "/emails/"
-# EMAIL_HOST = 'smtp.gmail.com'                                 # Gmail SMTP server
+# Gmail SMTP server
 # SMTP port for TLS
-# EMAIL_PORT = 587
+
 # Use TLS for securitywhat
 
-# Your email address used to send mails
+
 # EMAIL_HOST_USER = 'your_email@gmail.com'
-# Your email password or app password
 # EMAIL_HOST_PASSWORD = 'your_app_password'
+# EMAIL_PORT = 587
+# EMAIL_HOST = 'smtp.gmail.com'
 
 EMAIL_USE_TLS = True
 # An old way I tried to get info from .env. It didn't work
@@ -137,7 +152,8 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_Port = os.getenv('EMAIL_PORT')'''
 
-env_host = env('EMAIL_HOST')
+
+'''env_host = env('EMAIL_HOST')
 env_host_user = env('EMAIL_HOST_USER')
 env_host_password = env('EMAIL_HOST_PASSWORD')
 env_port = env('EMAIL_PORT')
@@ -147,7 +163,13 @@ EMAIL_HOST = env_host
 EMAIL_HOST_USER = env_host_user
 EMAIL_HOST_PASSWORD = env_host_password
 EMAIL_PORT = env_port
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER'''
+
+
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
 
 STATIC_URL = '/static/'
 
