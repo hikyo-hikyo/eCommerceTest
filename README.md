@@ -1,0 +1,1 @@
+You need to take this env.txt and rename it on your end to .env and place it into the same folder as manage.py. The gitignore of the school repo prevents me from uploading a .env so I renamed it to circumvent it. 
