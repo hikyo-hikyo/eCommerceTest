@@ -11,11 +11,6 @@ from pathlib import Path
 import os
 import environ
 
-<<<<<<< HEAD
-=======
-import environ
-
->>>>>>> api
 
 # This sets the base directory of your project so you can refer to files easily
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -157,7 +152,6 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_Port = os.getenv('EMAIL_PORT')'''
 
-<<<<<<< HEAD
 
 '''env_host = env('EMAIL_HOST')
 env_host_user = env('EMAIL_HOST_USER')
@@ -172,17 +166,13 @@ EMAIL_PORT = env_port
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER'''
 
 
-=======
-
->>>>>>> api
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = env('EMAIL_PORT')
-<<<<<<< HEAD
-=======
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
->>>>>>> api
+
 
 STATIC_URL = '/static/'
 
