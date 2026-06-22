@@ -4,3 +4,4 @@ djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1
 environ==1.0
 Requests==2.34.2
+Pillow==12.2.0

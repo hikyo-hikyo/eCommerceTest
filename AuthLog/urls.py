@@ -14,24 +14,27 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# AuthLog/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-app_name = 'eCommerce'
-
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Main pages
     path('', include('grabsomore.urls')),
-    path('shop/', include('eCommerce.urls', namespace='eCommerce')),
+    path('shop/', include('eCommerce.urls', namespace='ecommerce')),
     path('accounts/', include('accounts.urls')),
 
-    path('api/', include('eCommerce.api_urls')),
-    path('api/', include('eCommerce.urls')),
-    path('api/auth/', include('rest_framework.urls')),
+    # API Routes
+    path('api/', include('eCommerce.api_urls', namespace='ecommerce-api')),
+    path('api/auth/', include('rest_framework.urls', namespace='rest_framework')),
+
+    # JWT Tokens
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('reddit/', include('eCommerce.urls')),
+
+    path('reddit/', include('eCommerce.urls', namespace='ecommerce-reddit')),
 ]

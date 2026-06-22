@@ -5,11 +5,6 @@ from .views_api import StoreViewSet, ProductViewSet, ReviewViewSet
 
 app_name = 'eCommerce'
 
-# API Router
-router = DefaultRouter()
-router.register(r'stores', StoreViewSet, basename='store')
-router.register(r'products', ProductViewSet, basename='product')
-router.register(r'reviews', ReviewViewSet, basename='review')
 
 urlpatterns = [
     # Regular Web Views (Buyer + Vendor)
@@ -37,6 +32,5 @@ urlpatterns = [
 
     path('reddit/', views.reddit_feed, name='reddit_feed'),
 
-    # API Endpoints
-    path('', include(router.urls)),
+
 ]
