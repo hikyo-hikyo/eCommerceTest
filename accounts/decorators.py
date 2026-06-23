@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib import messages
 
+"""Here we define decorators to check if the user is a vendor or buyer. Print and redirect to specific pages if they do not have the required permissions."""
+
 
 def vendor_required(view_func):
     @login_required

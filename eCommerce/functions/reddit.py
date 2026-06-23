@@ -7,11 +7,9 @@ import random
 
 
 def get_reddit_posts(subreddit="productreview", limit=10):
-    """
-    Fetch latest posts from a subreddit.
-    """
-    url = f"https://www.reddit.com/r/{subreddit}/new.json"
+    """Try to fetch data from Reddit api, append it to a list. Then iterate over the list and print the data."""
 
+    url = f"https://www.reddit.com/r/{subreddit}/new.json"
     headers = {
         # Reddit requires this
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.10 Safari/605.1.1",

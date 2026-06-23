@@ -22,6 +22,7 @@ from .functions.reddit import get_reddit_posts
 
 
 def reddit_feed(request):
+    """Fetches Reddit posts and renders them in the template."""
     posts = get_reddit_posts(subreddit="productreview", limit=15)
     return render(request, 'eCommerce/reddit_feed.html', {'posts': posts})
 
@@ -173,6 +174,7 @@ def vendor_dashboard(request):
 # CRUD
 @vendor_required
 def create_store(request):
+    """Form to create a store. Collects name and description."""
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description')
@@ -191,6 +193,7 @@ def create_store(request):
 
 @vendor_required
 def edit_store(request, store_id):
+    """Form to edit a store. Can edit name and description."""
     store = get_object_or_404(Store, id=store_id, vendor=request.user)
     if request.method == 'POST':
         store.name = request.POST.get('name')
@@ -204,6 +207,7 @@ def edit_store(request, store_id):
 
 @vendor_required
 def delete_store(request, store_id):
+    """Deletes a store."""
     store = get_object_or_404(Store, id=store_id, vendor=request.user)
     store.delete()
     messages.success(request, "Store deleted successfully!")
@@ -213,6 +217,7 @@ def delete_store(request, store_id):
 #  PRODUCT CRUD
 @vendor_required
 def add_product(request, store_id):
+    """Form to add a product to a store. Collects name, description, price, and stock."""
     store = get_object_or_404(Store, id=store_id, vendor=request.user)
 
     if request.method == 'POST':
@@ -231,6 +236,7 @@ def add_product(request, store_id):
 
 @vendor_required
 def vendor_store_products(request, store_id):
+    """Displays all products in a store."""
     store = get_object_or_404(Store, id=store_id, vendor=request.user)
     products = store.products.all()
     return render(request, 'eCommerce/vendor/store_products.html', {
@@ -266,6 +272,7 @@ def buyer_home(request):
 
 @buyer_required
 def product_detail(request, product_id):
+    """Product detail page, only displays for buyers. Displays product name and lists reviews."""
     product = get_object_or_404(Product, id=product_id, is_active=True)
     reviews = product.reviews.all().order_by('-created_at')
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
@@ -299,6 +306,7 @@ def product_detail(request, product_id):
 
 @buyer_required
 def add_to_cart(request, product_id):
+    """Add a product to the user's cart. If the product is already in the cart, increment the quantity."""
     product = get_object_or_404(Product, id=product_id, is_active=True)
 
     # Get or create cart
@@ -321,6 +329,7 @@ def add_to_cart(request, product_id):
 
 @buyer_required
 def view_cart(request):
+    """View the user's cart, lists cart items and total price"""
     try:
         cart = Cart.objects.get(buyer=request.user)
         cart_items = cart.items.select_related('product').all()
@@ -363,6 +372,7 @@ def remove_from_cart(request, item_id):
 
 @buyer_required
 def checkout(request):
+    """Checkout page, only displays for buyers. Displays cart items and total price. On submit, creates an order and sends an email to the user."""
     try:
         cart = Cart.objects.get(buyer=request.user)
         cart_items = cart.items.select_related('product').all()
@@ -442,6 +452,7 @@ def product_catalog(request):
 
 @buyer_required
 def store_detail(request, store_id):
+    """Store detail page, only displays for buyers. Displays store name and lists products."""
     store = get_object_or_404(Store, id=store_id)
     products = store.products.filter(is_active=True).order_by('name')
 

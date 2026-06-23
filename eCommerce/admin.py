@@ -4,9 +4,12 @@ from .models import Store, Product, Cart, Cart_Item, Review
 
 # Vendor + Product Management
 
+"""These are all admin views for the eCommerce app. It lists all the info for the products, stores, and reviews."""
+
 
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
+
     list_display = ['name', 'vendor', 'created_at', 'product_count']
     list_filter = ['created_at']
     search_fields = ['name', 'description']
@@ -19,6 +22,7 @@ class StoreAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+
     list_display = ['name', 'store', 'price',
                     'stock', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at', 'store']
@@ -43,10 +47,3 @@ class CartAdmin(admin.ModelAdmin):
 @admin.register(Cart_Item)
 class CartItemAdmin(admin.ModelAdmin):
     list_display = ['cart', 'product', 'quantity']
-
-
-'''@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ['product', 'user', 'rating', 'created_at']
-    list_filter = ['rating', 'created_at']
-    search_fields = ['comment']'''

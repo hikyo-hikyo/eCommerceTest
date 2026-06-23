@@ -5,6 +5,7 @@ from .models import User
 
 
 class UserRegistrationForm(UserCreationForm):
+    """Form for user registration. Uses django's form buttons."""
     role = forms.ChoiceField(
         choices=User.ROLE_CHOICES,
         widget=forms.RadioSelect,

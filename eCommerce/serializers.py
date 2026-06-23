@@ -5,6 +5,9 @@ from .models import Store, Product, Review
 User = get_user_model()
 
 
+"""Serializers for nested displays. For example, showing usenames in the reviews."""
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

@@ -5,6 +5,7 @@ from .forms import UserRegistrationForm
 
 
 def register(request):
+    """Registers a new user, if the registration form is invalid, we call the form again to try again."""
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
