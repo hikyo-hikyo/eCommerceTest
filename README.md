@@ -45,3 +45,25 @@ Built with **Django**, **Django REST Framework (DRF)**, and custom user authenti
 ```bash
 git clone https://github.com/hikyo-hikyo/eCommerceTest.git
 cd eCommerceTest
+
+### 2. Requirements
+```bash
+pip install -r requirements.txt
+
+### 3. Environment
+```bash
+@"
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+
+EMAIL_HOST=sandbox.smtp.mailtrap.io
+EMAIL_HOST_USER=your-mailtrap-user
+EMAIL_HOST_PASSWORD=your-mailtrap-password
+EMAIL_PORT=2525
+"@ | Out-File -FilePath .env -Encoding utf8
+
+### 4. Migrations
+```bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
