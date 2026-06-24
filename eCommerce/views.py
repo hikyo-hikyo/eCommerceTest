@@ -281,7 +281,7 @@ def product_detail(request, product_id):
         rating = request.POST.get('rating')
         comment = request.POST.get('comment')
 
-        # Check if user has purchased this product
+        # Check if user has actually purchased this product
         has_purchased = Order_Item.objects.filter(
             order__buyer=request.user,
             product=product
@@ -290,10 +290,11 @@ def product_detail(request, product_id):
         Review.objects.create(
             product=product,
             buyer=request.user,
-            rating=rating,
+            rating=int(rating),
             comment=comment,
-            is_verified=has_purchased
+            is_verified=has_purchased   # ← This sets verified status
         )
+
         messages.success(request, "Review submitted successfully!")
         return redirect('eCommerce:product_detail', product_id=product.id)
 
