@@ -45,18 +45,17 @@ class Review(models.Model):
     """Review model is owned by one user and can be associated with one product."""
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    buyer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='reviews')
     rating = models.PositiveSmallIntegerField(
         choices=[(i, i) for i in range(1, 6)])
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True)
+    is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        ordering = ['-created_at']
-        unique_together = ('product', 'user')
-
     def __str__(self):
-        return f"{self.user.username} - {self.product.name} ({self.rating}★)"
+        status = "Verified" if self.is_verified else "Unverified"
+        return f"{self.buyer.username} - {self.product.name} ({status})"
 
 
 class Cart(models.Model):
