@@ -75,7 +75,8 @@ ROOT_URLCONF = 'AuthLog.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # You can add folders here if you keep templates outside apps
+        # You can add folders here if you keep templates outside apps
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,  # Tells Django to look for templates inside each app’s 'templates' folder
         'OPTIONS': {
             'context_processors': [
@@ -128,51 +129,33 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email settings to send emails (for example, password reset emails)
 # You can switch to console backend for testing emails in your terminal instead of sending real emails
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# Use SMTP server to send real emails
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# Path to save emails if using file backend
 EMAIL_FILE_PATH = "/emails/"
-# Gmail SMTP server
 # SMTP port for TLS
-
 # Use TLS for securitywhat
-
-
 # EMAIL_HOST_USER = 'your_email@gmail.com'
 # EMAIL_HOST_PASSWORD = 'your_app_password'
 # EMAIL_PORT = 587
 # EMAIL_HOST = 'smtp.gmail.com'
+# Use SMTP server to send real emails
+print(f"DEBUG = {DEBUG}")
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    print("Using CONSOLE email backend")
+    # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    # EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
-EMAIL_USE_TLS = True
-# An old way I tried to get info from .env. It didn't work
-'''EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_Port = os.getenv('EMAIL_PORT')'''
-
-
-'''env_host = env('EMAIL_HOST')
-env_host_user = env('EMAIL_HOST_USER')
-env_host_password = env('EMAIL_HOST_PASSWORD')
-env_port = env('EMAIL_PORT')
-
-
-EMAIL_HOST = env_host
-EMAIL_HOST_USER = env_host_user
-EMAIL_HOST_PASSWORD = env_host_password
-EMAIL_PORT = env_port
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER'''
+else:
+    # Production / Real email sending
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = env('EMAIL_HOST')
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+    EMAIL_PORT = env('EMAIL_PORT')
+    EMAIL_USE_TLS = True
 
 
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = env('EMAIL_PORT')
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+# Always define this safely
+DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER', default='noreply@yourdomain.com')
 
 STATIC_URL = '/static/'
 

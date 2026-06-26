@@ -264,7 +264,7 @@ def buyer_home(request):
     # Optional: Get all stores for browsing
     stores = Store.objects.all()
 
-    return render(request, 'eCommerce/buyer/home.html', {
+    return render(request, 'eCommerce/buyer/index.html', {
         'featured_products': featured_products,
         'stores': stores,
     })
